@@ -3,6 +3,8 @@ Image Tune takes image files and handles resize and conversion in the browser pr
 
 Now you're users can upload large images from modern smartphones or DSLR cameras quickly and efficiently as the client handles the conversion of the image to a web-appropriate size. Perfect for user profiles, social media images and more.
 
+Example: https://connerfritz.github.io/imagetune/
+
 ## Usage
 ```
 var ImageTune = require('imagetune');
