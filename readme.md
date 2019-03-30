@@ -5,7 +5,7 @@ Now you're users can upload large images from modern smartphones or DSLR cameras
 
 ## Usage
 ```
-var imagetune = require('imagetune');
+var ImageTune = require('imagetune');
 document.getElementById("image-file").addEventListener("change", function(evt) {
   var file = evt.target.files[0];
   var options = {
@@ -14,7 +14,7 @@ document.getElementById("image-file").addEventListener("change", function(evt) {
     height: 250, 
     width: 250
   };
-  imagewhip.handleFile(file, options).then(function (imageData) {
+  ImageTune.tune(file, options).then(function (imageData) {
     document.body.getElementById("image-data").setAttribute("value", imageData);
   });
 });
