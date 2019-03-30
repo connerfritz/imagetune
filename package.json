@@ -1,0 +1,11 @@
+{
+  "name": "imagetune",
+  "version": "1.0.0",
+  "description": "Lighten your image load and handle file conversion, scaling and formatting in the browser.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

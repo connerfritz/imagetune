@@ -1,0 +1,23 @@
+<html>
+  <body>
+    <h1>Example Usage</h1>
+    <input id="file" type="file" />
+    <script src="index.js"></script>
+    <script>
+      document.getElementById("file").addEventListener("change", function(evt) {
+        ImageTune.tune(evt.target.files[0], {type: 'png', quality: 80, height: 250, width:
+        250}).then(function (imageData) {
+          var image = new Image();
+          image.src = imageData;
+          document.body.appendChild(image);
+
+          var input = document.createElement("input");
+          input.setAttribute("type", "hidden");
+          input.setAttribute("name", "image_data");
+          input.setAttribute("value", imageData);
+          document.body.appendChild(input);
+        });
+      });
+    </script>
+  </body>
+</html>
