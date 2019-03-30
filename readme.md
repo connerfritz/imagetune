@@ -19,3 +19,12 @@ document.getElementById("image-file").addEventListener("change", function(evt) {
   });
 });
 ```
+
+## Options
+| Name    | Description                                    | Default |
+|---------|------------------------------------------------|---------|
+| width   | Desired width of result image in pixels        | 200     |
+| height  | Desired height of result image in pixels       | 200     |
+| quality | Image quality value, changes file size (1-100) | 100     |
+| type    | Image format type (png, jpg, gif)              | jpg     |
+| mode    | Scale mode (crop or scale)                     | scale   |
