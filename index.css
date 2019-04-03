@@ -1,0 +1,50 @@
+html, body {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 200;
+  text-align: center;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 400;
+}
+
+.ImageTuneContainer {
+  border: 1px solid #dbdbdb;
+  background: #eaeaea;
+  border-radius: 5px;
+  width: 500px;
+  minHeight: 300px;
+  margin: auto;
+  padding: 50px;
+  font-size: 10px;
+}
+
+.SelectFileButton {
+  border: 1px solid #2667ff;
+  background: #4286f4;
+  padding: 5px 10px;
+  border-radius: 3px;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+  margin-bottom: 20px;
+  font-weight: 400;
+  font-size: 18px;
+}
+
+.SelectFileButton input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.ImageViewer {
+  background: #e5e5e5;
+  margin: auto;
+  width: 260px;
+  height: 260px;
+  padding: 10px;
+}
