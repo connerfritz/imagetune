@@ -5,6 +5,17 @@ Now you're users can upload large images from modern smartphones or DSLR cameras
 
 Example: https://connerfritz.github.io/imagetune/
 
+## Installation
+For npm
+```
+npm install -s imagetune
+```
+For Yarn
+```
+yarn add imagetune
+```
+
+
 ## Usage
 ```
 var ImageTune = require('imagetune');
