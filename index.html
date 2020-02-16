@@ -17,7 +17,8 @@
         </label>
         <p>Will resize to a max 250px JPEG with an 80% quality setting.</p>
         <div class="ImageViewer">
-          <img id="exampleimage"/>
+          <img id="exampleimage" style="max-width: 100%; max-height: 100%;"/>
+          <span id="benchmark"></span>
         </div>
       </div>
     </div>
@@ -25,8 +26,10 @@
     <script>
       // EXAMPLE USAGE
       document.getElementById("file").addEventListener("change", function(evt) {
+        var start = new Date().getTime();
         ImageTune.tune(evt.target.files[0], {type: 'jpg', quality: 80, height: 250, width:
         250}).then(function (imageData) {
+          document.getElementById("benchmark").textContent = "Performed in " + (new Date().getTime() - start) + "ms";
           var image = document.getElementById("exampleimage");
           image.src = imageData;
         });
