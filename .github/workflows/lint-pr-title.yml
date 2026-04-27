@@ -2,7 +2,9 @@ name: Lint PR title
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    # No `synchronize`: pushing new commits doesn't change the PR title,
+    # so re-running the title lint on every push is wasted work.
+    types: [opened, edited, reopened]
 
 permissions:
   pull-requests: read
