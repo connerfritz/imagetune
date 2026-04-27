@@ -1,3 +1,4 @@
+import { raceAbort } from './abort.js';
 import { computeDimensions } from './dimensions.js';
 import type { LoadedImage } from './load-image.js';
 import type { OutputFormatInput, TuneOptions } from './types.js';
@@ -25,7 +26,7 @@ export async function renderToBlob(source: LoadedImage, options: TuneOptions): P
     ctx.imageSmoothingQuality = smoothing;
     ctx.drawImage(source, dims.offsetX, dims.offsetY, dims.drawWidth, dims.drawHeight);
     signal?.throwIfAborted();
-    return await canvas.convertToBlob({ type: mime, quality });
+    return await raceAbort(canvas.convertToBlob({ type: mime, quality }), signal);
   }
 
   const canvas = document.createElement('canvas');
@@ -37,13 +38,14 @@ export async function renderToBlob(source: LoadedImage, options: TuneOptions): P
   ctx.drawImage(source, dims.offsetX, dims.offsetY, dims.drawWidth, dims.drawHeight);
   signal?.throwIfAborted();
 
-  return await new Promise<Blob>((resolve, reject) => {
+  const encode = new Promise<Blob>((res, rej) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('Canvas encoding failed'))),
+      (blob) => (blob ? res(blob) : rej(new Error('Canvas encoding failed'))),
       mime,
       quality,
     );
   });
+  return await raceAbort(encode, signal);
 }
 
 function resolve(source: LoadedImage, options: TuneOptions) {
@@ -52,7 +54,7 @@ function resolve(source: LoadedImage, options: TuneOptions) {
   const mode = options.mode ?? 'scale';
   const qualityRaw = options.quality ?? 100;
 
-  if (qualityRaw < 1 || qualityRaw > 100) {
+  if (!Number.isFinite(qualityRaw) || qualityRaw < 1 || qualityRaw > 100) {
     throw new RangeError(`Invalid quality value: ${qualityRaw}. Must be 1–100.`);
   }
 

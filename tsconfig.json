@@ -18,7 +18,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "types": ["vitest/globals"]
+    "types": []
   },
   "include": ["src/**/*", "test/**/*", "tsup.config.ts", "vitest.config.ts"]
 }

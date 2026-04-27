@@ -25,10 +25,26 @@ export async function tune(file: Blob, options: TuneOptions = {}): Promise<Blob>
 /** Like {@link tune}, but resolves with a base64 `data:` URL (v1-compatible). */
 export async function tuneToDataURL(file: Blob, options: TuneOptions = {}): Promise<string> {
   const blob = await tune(file, options);
+  options.signal?.throwIfAborted();
   return await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () => reject(reader.error ?? new Error('Failed to read result'));
+    const cleanup = () => options.signal?.removeEventListener('abort', onAbort);
+    const onAbort = () => {
+      cleanup();
+      try {
+        reader.abort();
+      } catch {
+        // FileReader.abort throws if no read is in progress; ignore.
+      }
+      reject(options.signal?.reason ?? new DOMException('Aborted', 'AbortError'));
+    };
+    options.signal?.addEventListener('abort', onAbort, { once: true });
+    reader.onerror = () => {
+      cleanup();
+      reject(reader.error ?? new Error('Failed to read result'));
+    };
     reader.onloadend = () => {
+      cleanup();
       if (typeof reader.result === 'string') resolve(reader.result);
       else reject(new Error('Unexpected FileReader result'));
     };

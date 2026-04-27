@@ -1,3 +1,5 @@
+import { raceAbort } from './abort.js';
+
 export type LoadedImage = ImageBitmap | HTMLImageElement;
 
 /**
@@ -11,12 +13,13 @@ export async function loadImage(file: Blob, signal?: AbortSignal): Promise<Loade
   signal?.throwIfAborted();
 
   if (typeof createImageBitmap === 'function') {
-    const bitmap = await createImageBitmap(file);
-    if (signal?.aborted) {
-      bitmap.close();
-      signal.throwIfAborted();
-    }
-    return bitmap;
+    return await raceAbort(
+      createImageBitmap(file),
+      signal,
+      // If the caller aborts after the decode resolves but before we hand
+      // the bitmap back, close it so the GPU memory isn't stranded.
+      (bitmap) => bitmap.close(),
+    );
   }
 
   return await loadViaFileReader(file, signal);
@@ -37,6 +40,8 @@ function loadViaFileReader(file: Blob, signal?: AbortSignal): Promise<HTMLImageE
       } catch {
         // FileReader.abort throws if no read is in progress; ignore.
       }
+      // Cancel any in-flight image decode by clearing the src.
+      image.src = '';
       reject(signal?.reason ?? new DOMException('Aborted', 'AbortError'));
     };
 

@@ -21,7 +21,9 @@ export default defineConfig([
     // Unwrap the IIFE namespace so `window.ImageTune.tune(...)` works the
     // way it did in v1 even though the source uses ES modules.
     footer: {
-      js: 'window.ImageTune = __imagetune__.ImageTune;',
+      // Guard for non-browser execution (e.g. an SSR pre-render that
+      // happens to evaluate the IIFE bundle). Bare `window` would throw.
+      js: 'if (typeof window !== "undefined") window.ImageTune = __imagetune__.ImageTune;',
     },
   },
 ]);
