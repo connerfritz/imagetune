@@ -64,6 +64,44 @@ describe('computeDimensions — crop (cover)', () => {
   });
 });
 
+describe('computeDimensions — edge cases', () => {
+  it('handles a 1×1 source', () => {
+    const dims = computeDimensions({ width: 1, height: 1 }, 200, 200, 'scale');
+    expect(dims.canvasWidth).toBe(200);
+    expect(dims.canvasHeight).toBe(200);
+  });
+
+  it('produces non-integer canvas dimensions when ratios do not divide evenly', () => {
+    // 1000×999 fitted into 200×200 → ratio 5 (width limits) → 200×199.8.
+    const dims = computeDimensions({ width: 1000, height: 999 }, 200, 200, 'scale');
+    expect(dims.canvasWidth).toBe(200);
+    expect(dims.canvasHeight).toBeCloseTo(199.8);
+  });
+
+  it('upscales in crop mode when the source is smaller than the target', () => {
+    // 100×100 source covering a 200×200 target — both ratios = 0.5.
+    const dims = computeDimensions({ width: 100, height: 100 }, 200, 200, 'crop');
+    expect(dims.drawWidth).toBe(200);
+    expect(dims.drawHeight).toBe(200);
+    expect(dims.offsetX).toBe(0);
+    expect(dims.offsetY).toBe(0);
+  });
+
+  it('produces fractional offsets for odd overflow in crop mode', () => {
+    // 4001×2000 cropped to 200×200 → ratio 10 (height limits), draw 400.1
+    // wide, overflow 200.1 split symmetrically → offsetX = -100.05.
+    const dims = computeDimensions({ width: 4001, height: 2000 }, 200, 200, 'crop');
+    expect(dims.drawWidth).toBeCloseTo(400.1);
+    expect(dims.offsetX).toBeCloseTo(-100.05);
+  });
+
+  it('handles very large sources without losing precision', () => {
+    const dims = computeDimensions({ width: 10_000, height: 10_000 }, 200, 200, 'scale');
+    expect(dims.canvasWidth).toBe(200);
+    expect(dims.canvasHeight).toBe(200);
+  });
+});
+
 describe('computeDimensions — validation', () => {
   it('rejects zero or negative source dimensions', () => {
     expect(() => computeDimensions({ width: 0, height: 100 }, 200, 200, 'scale')).toThrow(
