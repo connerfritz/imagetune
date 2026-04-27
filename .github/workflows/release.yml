@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [master, main]
+    branches: [master]
 
 concurrency:
   group: release-${{ github.ref }}
@@ -18,28 +18,39 @@ jobs:
   release:
     if: github.repository == 'connerfritz/imagetune'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
         with:
           version: 10
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
+          # No `registry-url` here on purpose: it writes an .npmrc keyed
+          # to NODE_AUTH_TOKEN, which collides with semantic-release's own
+          # auth and can silently skip provenance. semantic-release/npm
+          # handles registry config itself via NPM_TOKEN.
           node-version: 22
           cache: pnpm
-          registry-url: 'https://registry.npmjs.org'
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm rebuild
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
       - run: pnpm verify-package
+      - name: Verify dist artifacts before publish
+        run: |
+          test -s dist/index.js
+          test -s dist/index.cjs
+          test -s dist/index.global.js
+          test -s dist/index.d.ts
+          test -s dist/index.d.cts
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm exec semantic-release
