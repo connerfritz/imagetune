@@ -4,73 +4,87 @@ Guidance for Claude Code when working in this repository.
 
 ## Project overview
 
-**ImageTune** is a tiny, zero-dependency browser library for client-side image
-resizing, cropping, and format conversion. It takes a `File` (typically from an
-`<input type="file">`) and returns a data URL of the processed image, so apps
-can downscale and re-encode large photos *before* upload.
+**ImageTune** is a tiny, zero-dependency browser library for client-side
+image resizing, cropping, and format conversion. It takes a `Blob`
+(typically a `File` from `<input type="file">`) and returns an encoded
+`Blob`, so apps can downscale and re-encode large photos *before* upload.
 
-Public API surface is one method:
+Public API:
 
-```js
-ImageTune.tune(file, options) // → Promise<dataUrl>
+```ts
+tune(file, options)         // → Promise<Blob>
+tuneToDataURL(file, options) // → Promise<string>  (data: URL)
 ```
 
-Supported options (see `readme.md` for the table):
-`width`, `height`, `quality` (1–100), `type` (`png`|`jpg`|`gif`), `mode` (`scale`|`crop`), `smoothingQuality`.
+Options: `width`, `height`, `quality` (1–100), `type`
+(`jpeg`/`jpg`/`png`/`webp`/`avif`), `mode` (`scale`/`crop`),
+`smoothingQuality`, `signal` (`AbortSignal`).
 
 ## Repository layout
 
-- `index.js` — the entire library. UMD wrapper (AMD / CommonJS / global
-  `window.ImageTune`) around two internal helpers and the exported object.
-  - `loadImage(file)` — `FileReader` → `Image`, resolves with an `HTMLImageElement`.
-  - `convertImage(image, options)` — draws to an offscreen `<canvas>` and
-    returns `canvas.toDataURL(type, quality)`.
-  - `ImageTune.tune(file, options)` — composes the two.
-- `index.html` — minimal live example that wires a file input to `ImageTune.tune`.
-- `readme.md` — user-facing docs and options table.
-- `package.json` — `name: imagetune`, `version: 1.0.0`, `main: index.js`, no
-  scripts, no dependencies, no dev dependencies.
+- `src/` — TypeScript source.
+  - `index.ts` — public API: `tune`, `tuneToDataURL`, default `ImageTune` object.
+  - `load-image.ts` — `createImageBitmap` decode, with `FileReader` + `<img>` fallback.
+  - `render.ts` — `OffscreenCanvas`/`HTMLCanvasElement` rendering pipeline.
+  - `dimensions.ts` — pure scale/crop math, exhaustively unit-tested.
+  - `types.ts` — shared types.
+- `test/` — Vitest specs (happy-dom).
+- `examples/index.html` — vanilla browser demo using the IIFE build.
+- `dist/` — generated; do not edit. ESM (`index.js`), CJS (`index.cjs`),
+  IIFE (`index.global.js`), and `.d.ts`.
+- `.github/workflows/` — `ci.yml`, `release.yml`, `lint-pr-title.yml`.
+- `.releaserc.json` — semantic-release config.
+- `tsup.config.ts`, `tsconfig.json`, `biome.json`, `vitest.config.ts` — tooling.
 
-There is no build step, no test suite, no linter, no CI, and no git tags or
-published releases beyond whatever was manually pushed to npm as `1.0.0`.
+## Toolchain
 
-## How the code is written (current style)
-
-- ES5: `var`, function expressions, `new Promise(...)` manually — no `async`/`await`.
-- UMD factory wrapper with an unused `($, _)` parameter list (leftover, not wired up).
-- Browser-only: relies on `document`, `Image`, `FileReader`, `HTMLCanvasElement`.
-- No type annotations, no JSDoc types.
-
-When editing `index.js`, preserve the UMD wrapper and ES5 syntax unless the
-user explicitly asks for a modernization — otherwise builds/consumers relying
-on the global `ImageTune` will break.
+- Node ≥ 20, pnpm 10. Lockfile (`pnpm-lock.yaml`) is committed.
+- TypeScript strict, target ES2022, `verbatimModuleSyntax`, `exactOptionalPropertyTypes`.
+- Build: **tsup** (one config, three outputs).
+- Lint + format: **Biome** (single tool — no ESLint, no Prettier).
+- Test: **Vitest** with `happy-dom`. Canvas APIs are stubbed in `tune.test.ts`
+  because happy-dom doesn't render pixels; pure logic lives in `dimensions.ts`
+  and is tested without stubs.
+- Package quality gates in CI: `publint` + `@arethetypeswrong/cli`.
 
 ## Common tasks
 
-- **Try it locally:** open `index.html` directly in a browser, or serve the
-  directory (`python3 -m http.server` / `npx serve .`) and pick an image.
-- **Publish to npm:** currently manual — bump `package.json` version, `npm publish`.
-  There is no automated release pipeline yet.
-- **Run tests:** none exist. `npm test` prints an error and exits 1.
+- **Develop:** `pnpm dev` (tsup watch) → open `examples/index.html` in a
+  browser (or `npx serve .`).
+- **Validate:** `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm verify-package`.
+- **Release:** automated. Merge a Conventional Commit to `master`;
+  semantic-release publishes the npm version with provenance, creates the
+  GitHub Release, regenerates `CHANGELOG.md`, and tags the commit.
+  Manual `npm publish` is no longer the workflow.
+
+## Conventions
+
+- **Conventional Commits required.** PR titles are linted by
+  `lint-pr-title.yml`; squash-merging makes the title the commit. `fix:`
+  → patch, `feat:` → minor, `feat!:` / `BREAKING CHANGE:` footer → major.
+  A non-conforming squash means *no release at all* — that's why the
+  PR-title check is a required check.
+- Feature work happens on `claude/...` branches. `master` is the default
+  branch and is protected — releases happen on push there.
+- Don't add runtime dependencies. The point of this package is to be a
+  thin canvas wrapper.
+- Prefer editing existing files over adding new ones. The whole library
+  is ~150 lines of source; resist the urge to over-modularize.
 
 ## Gotchas
 
-- `convertImage` computes `widthRatio`/`heightRatio` as `image.width / width`
-  (source over target), so the `>` comparison in `scale` mode chooses the
-  *larger* shrink factor — i.e. it fits the image *inside* the target box
-  while preserving aspect ratio. Don't "simplify" this without re-deriving it.
-- `gif` is accepted as an input type but `canvas.toDataURL('image/gif', q)`
-  silently falls back to PNG in every major browser — the option is effectively
-  a no-op for output. Worth flagging if touching the types table.
-- Errors in `convertImage` call `reject(...)` but execution continues after
-  the `reject` (no `return`), so the rest of the function still runs. Preserve
-  this only if intentionally matching current behavior; otherwise add `return`.
-- `loadImage` has no `reader.onerror` / `image.onerror` handler — malformed
-  files hang the returned promise forever.
-- `ImageTune.tune` swallows errors from `loadImage` and `convertImage` (no
-  `.catch`, no `reject` wired through). The outer promise never rejects.
-
-## Branch conventions
-
-Feature work happens on `claude/...` branches. `master` is the default branch.
-Do not push to `master` without explicit instruction.
+- `gif` output was removed in v2. `canvas.toBlob('image/gif')` silently
+  falls back to PNG in every major browser, so v1 never actually emitted
+  GIFs. Don't add it back without `OffscreenCanvas.convertToBlob` actually
+  supporting it.
+- `tune()` returns a `Blob` in v2, not a data URL. The data-URL behavior
+  is `tuneToDataURL()`. Updating the README/example without also updating
+  this is the most common drift.
+- The IIFE build re-assigns `window.ImageTune` to `.default` so
+  `ImageTune.tune(...)` works the way it did in v1 even though the source
+  uses ES modules. Don't strip the `footer.js` line in `tsup.config.ts`.
+- `loadImage` `.close()`s the `ImageBitmap` in `tune()`'s `finally{}`.
+  If you add a new code path that bypasses `tune()` and gets a bitmap,
+  make sure it closes it too — leaking bitmaps starves the GPU on mobile.
+- semantic-release reads from both `master` and `main` (`.releaserc.json`).
+  This repo uses `master`; the `main` entry is just future-proofing.

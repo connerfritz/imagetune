@@ -1,43 +1,106 @@
-# Image Tune
-Image Tune takes image files and handles resize and conversion in the browser prior to upload, saving server processing time and storage space while reducing upload times.
+# ImageTune
 
-Now you're users can upload large images from modern smartphones or DSLR cameras quickly and efficiently as the client handles the conversion of the image to a web-appropriate size. Perfect for user profiles, social media images and more.
+Tiny zero-dependency browser library for client-side image resizing,
+cropping, and format conversion. Takes a `File` (typically from
+`<input type="file">`) and returns an encoded `Blob` so apps can downscale
+and re-encode large photos *before* upload — saving bandwidth, server
+processing time, and storage.
 
-Example: https://connerfritz.github.io/imagetune/
+> **v2 highlights:** TypeScript types, ESM + CJS + UMD builds, WebP / AVIF
+> output, `OffscreenCanvas` decoding, `AbortSignal` cancellation, and
+> proper rejection of malformed inputs. See [Migrating from v1](#migrating-from-v1).
 
-## Installation
-For npm
+```bash
+npm install imagetune
+# or: pnpm add imagetune  /  yarn add imagetune  /  bun add imagetune
 ```
-npm install -s imagetune
-```
-For Yarn
-```
-yarn add imagetune
-```
-
 
 ## Usage
-```
-var ImageTune = require('imagetune');
-document.getElementById("image-file").addEventListener("change", function(evt) {
-  var file = evt.target.files[0];
-  var options = {
-    type: 'png', 
-    quality: 80, 
-    height: 250, 
-    width: 250
-  };
-  ImageTune.tune(file, options).then(function (imageData) {
-    document.body.getElementById("image-data").setAttribute("value", imageData);
-  });
+
+```ts
+import { tune } from 'imagetune';
+
+const file = (document.querySelector<HTMLInputElement>('#file'))!.files![0];
+
+const blob = await tune(file, {
+  type: 'webp',
+  quality: 80,
+  width: 250,
+  height: 250,
+  mode: 'crop',
 });
+
+// Preview:
+preview.src = URL.createObjectURL(blob);
+
+// Or upload directly:
+const fd = new FormData();
+fd.append('image', blob, 'avatar.webp');
+await fetch('/upload', { method: 'POST', body: fd });
+```
+
+Need a base64 data URL (v1 behavior) instead of a Blob?
+
+```ts
+import { tuneToDataURL } from 'imagetune';
+const dataUrl = await tuneToDataURL(file, { type: 'webp', quality: 80 });
+```
+
+Drop-in `<script>` tag (UMD/IIFE build, exposes `window.ImageTune`):
+
+```html
+<script src="https://unpkg.com/imagetune"></script>
+<script>
+  ImageTune.tune(file, { type: 'webp', quality: 80 }).then(blob => { ... });
+</script>
 ```
 
 ## Options
-| Name    | Description                                    | Default |
-|---------|------------------------------------------------|---------|
-| width   | Desired width of result image in pixels        | 200     |
-| height  | Desired height of result image in pixels       | 200     |
-| quality | Image quality value, changes file size (1-100) | 100     |
-| type    | Image format type (png, jpg, gif)              | jpg     |
-| mode    | Scale mode (crop or scale)                     | scale   |
+
+| Name               | Type                                            | Default  | Description                                                |
+|--------------------|-------------------------------------------------|----------|------------------------------------------------------------|
+| `width`            | `number`                                        | `200`    | Target width in pixels.                                    |
+| `height`           | `number`                                        | `200`    | Target height in pixels.                                   |
+| `quality`          | `number` (1–100)                                | `100`    | Encoder quality. Ignored for `png` (lossless).             |
+| `type`             | `'jpeg' \| 'jpg' \| 'png' \| 'webp' \| 'avif'`  | `'jpeg'` | Output format. `'jpg'` is an alias for `'jpeg'`.           |
+| `mode`             | `'scale' \| 'crop'`                             | `'scale'`| `scale` fits inside the box; `crop` covers and centers.    |
+| `smoothingQuality` | `'low' \| 'medium' \| 'high'`                   | `'high'` | Canvas `imageSmoothingQuality`.                            |
+| `signal`           | `AbortSignal`                                   | —        | Cancel decoding/encoding (e.g. when the input changes).    |
+
+## Migrating from v1
+
+| Change                                  | Action                                                                  |
+|-----------------------------------------|-------------------------------------------------------------------------|
+| `tune()` resolves with a `Blob`         | Use `URL.createObjectURL(blob)` for previews, or `tuneToDataURL()`.     |
+| `gif` output removed                    | It silently fell back to PNG anyway. Pass `'png'` (or `'webp'`).        |
+| Errors now reject the promise           | Add `.catch(...)` (or wrap in `try/await`). v1 silently hung instead.   |
+| No more global UMD via bare `index.js`  | Use the `unpkg` build or `import` from the package.                     |
+
+The default options are unchanged; same target dimensions, same JPEG default.
+
+## Browser support
+
+Modern evergreen browsers. The library prefers `createImageBitmap` and
+`OffscreenCanvas`, falling back to `FileReader` + `<img>` + `HTMLCanvasElement`
+when those aren't available.
+
+## Development
+
+```bash
+pnpm install
+pnpm dev          # rebuild on change
+pnpm test         # vitest
+pnpm typecheck
+pnpm lint
+pnpm build
+```
+
+Open `examples/index.html` after a build to try it in a browser.
+
+Releases are automated via [semantic-release](https://github.com/semantic-release/semantic-release):
+merge a Conventional Commit to `master` and a new npm version is published
+with provenance, a GitHub Release, and an updated `CHANGELOG.md`.
+
+## License
+
+ISC. See [LICENSE](./LICENSE).

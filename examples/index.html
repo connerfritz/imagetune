@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ImageTune example</title>
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 1.5rem; }
+      img { max-width: 100%; margin-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>ImageTune example</h1>
+    <p>Pick an image; it is resized to 250×250 (cover) and re-encoded as WebP at quality 80.</p>
+    <input id="file" type="file" accept="image/*" />
+    <p id="meta"></p>
+    <img id="preview" alt="" />
+
+    <!--
+      During local development this loads the freshly built UMD/IIFE bundle.
+      Run `pnpm build` first, or `pnpm dev` to rebuild on change.
+    -->
+    <script src="../dist/index.global.js"></script>
+    <script>
+      const fileInput = document.getElementById('file');
+      const preview = document.getElementById('preview');
+      const meta = document.getElementById('meta');
+
+      fileInput.addEventListener('change', async (evt) => {
+        const file = evt.target.files[0];
+        if (!file) return;
+
+        const opts = { type: 'webp', quality: 80, width: 250, height: 250, mode: 'crop' };
+        const blob = await ImageTune.tune(file, opts);
+
+        if (preview.src) URL.revokeObjectURL(preview.src);
+        preview.src = URL.createObjectURL(blob);
+        meta.textContent =
+          `Original: ${(file.size / 1024).toFixed(1)} KiB → ` +
+          `Tuned: ${(blob.size / 1024).toFixed(1)} KiB (${blob.type})`;
+      });
+    </script>
+  </body>
+</html>
