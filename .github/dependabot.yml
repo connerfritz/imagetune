@@ -1,5 +1,9 @@
 version: 2
 updates:
+  # npm dev-dependencies: group patch + minor bumps into one weekly PR.
+  # Major bumps fall OUTSIDE the group on purpose, so each one gets its
+  # own PR and breaking-change review. The library has no runtime deps,
+  # so dev-dependencies covers the whole npm tree here.
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -7,6 +11,12 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+        update-types: [patch, minor]
+
+  # GitHub Actions: same pattern. Patch+minor get grouped (mostly SHA
+  # bumps within a major); each major gets its own PR. v4→v5 of
+  # actions/checkout etc. is rarely a drop-in upgrade — typically the
+  # Node runtime requirement changes.
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -14,3 +24,4 @@ updates:
     groups:
       github-actions:
         patterns: ['*']
+        update-types: [patch, minor]
