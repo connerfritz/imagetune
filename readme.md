@@ -117,10 +117,12 @@ Releases are automated via [semantic-release](https://github.com/semantic-releas
 merge a Conventional Commit to `main` and a new npm version is published
 with provenance, a GitHub Release, and an updated `CHANGELOG.md`.
 
-Authentication uses [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers)
-(OIDC) — there is no `NPM_TOKEN` secret. The release workflow has
-`id-token: write` and the package is configured on npmjs.com to trust
-this repo's `release.yml` workflow.
+Authentication uses an `NPM_TOKEN` repo secret (granular access token,
+scoped to this package). The release workflow also has `id-token: write`
+so npm provenance attestations attach automatically. We'll switch to
+[Trusted Publishing](https://docs.npmjs.com/trusted-publishers) once
+[`@semantic-release/npm`](https://github.com/semantic-release/npm)
+integrates the OIDC flow.
 
 ## License
 

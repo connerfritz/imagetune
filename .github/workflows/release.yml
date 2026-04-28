@@ -27,16 +27,11 @@ jobs:
       - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          # No `registry-url` here: it writes an .npmrc keyed to
-          # NODE_AUTH_TOKEN which would short-circuit Trusted Publishing
-          # by giving the npm CLI a stale token to use instead of the
-          # OIDC exchange.
-          #
-          # Node 24, not 22: Trusted Publishing requires npm CLI >=11.5
-          # and Node 22 still ships with npm 10.9.x in the GHA hosted
-          # toolcache. The library itself supports Node >=20 (see
-          # engines.node), but the *publisher* runtime is independent.
-          node-version: 24
+          # No `registry-url` set here on purpose: @semantic-release/npm
+          # writes its own .npmrc keyed to NPM_TOKEN. setup-node's
+          # registry-url would write a separate .npmrc keyed to
+          # NODE_AUTH_TOKEN, which can collide.
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm rebuild
@@ -64,12 +59,15 @@ jobs:
           test -s dist/index.global.js
           test -s dist/index.d.ts
           test -s dist/index.d.cts
-      - name: Release (npm Trusted Publishing via OIDC)
-        # No NPM_TOKEN: the workflow's id-token: write permission lets
-        # the npm CLI fetch a short-lived OIDC token from GitHub and
-        # exchange it for a publish credential, provided the package is
-        # configured with this repo+workflow as a trusted publisher on
-        # npmjs.com. Provenance attestations are attached automatically.
+      - name: Release
+        # @semantic-release/npm@12 still requires NPM_TOKEN — it does not
+        # yet integrate with npm's Trusted Publishing OIDC flow, despite
+        # the npm CLI itself supporting it. Revisit once
+        # https://github.com/semantic-release/npm picks up TP support.
+        # Provenance attestations DO still attach because `id-token:
+        # write` is granted on this job and `publishConfig.provenance`
+        # is true in package.json — those are independent of auth.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm exec semantic-release
