@@ -52,7 +52,7 @@ Options: `width`, `height`, `quality` (1–100), `type`
 - **Develop:** `pnpm dev` (tsup watch) → open `examples/index.html` in a
   browser (or `npx serve .`).
 - **Validate:** `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm verify-package`.
-- **Release:** automated. Merge a Conventional Commit to `master`;
+- **Release:** automated. Merge a Conventional Commit to `main`;
   semantic-release publishes the npm version with provenance, creates the
   GitHub Release, regenerates `CHANGELOG.md`, and tags the commit.
   Manual `npm publish` is no longer the workflow.
@@ -64,7 +64,7 @@ Options: `width`, `height`, `quality` (1–100), `type`
   → patch, `feat:` → minor, `feat!:` / `BREAKING CHANGE:` footer → major.
   A non-conforming squash means *no release at all* — that's why the
   PR-title check is a required check.
-- Feature work happens on `claude/...` branches. `master` is the default
+- Feature work happens on feature branches. `main` is the default
   branch and is protected — releases happen on push there.
 - Don't add runtime dependencies. The point of this package is to be a
   thin canvas wrapper.
@@ -92,5 +92,5 @@ Options: `width`, `height`, `quality` (1–100), `type`
 - `loadImage` `.close()`s the `ImageBitmap` in `tune()`'s `finally{}`.
   If you add a new code path that bypasses `tune()` and gets a bitmap,
   make sure it closes it too — leaking bitmaps starves the GPU on mobile.
-- semantic-release reads from both `master` and `main` (`.releaserc.json`).
-  This repo uses `master`; the `main` entry is just future-proofing.
+- The repo's default branch is `main` (not `master`). All workflow
+  triggers and `.releaserc.json:branches` target `main`.

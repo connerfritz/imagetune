@@ -33,4 +33,4 @@ jobs:
           subjectPattern: ^[A-Za-z].+$
           subjectPatternError: |
             The PR title subject must start with a letter so the generated
-            commit on master is a valid Conventional Commit.
+            commit on main is a valid Conventional Commit.

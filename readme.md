@@ -114,7 +114,7 @@ pnpm build
 Open `examples/index.html` after a build to try it in a browser.
 
 Releases are automated via [semantic-release](https://github.com/semantic-release/semantic-release):
-merge a Conventional Commit to `master` and a new npm version is published
+merge a Conventional Commit to `main` and a new npm version is published
 with provenance, a GitHub Release, and an updated `CHANGELOG.md`.
 
 Authentication uses [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers)
