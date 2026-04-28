@@ -21,11 +21,7 @@
   "unpkg": "./dist/index.global.js",
   "jsdelivr": "./dist/index.global.js",
   "sideEffects": false,
-  "files": [
-    "dist",
-    "readme.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "readme.md", "LICENSE"],
   "engines": {
     "node": ">=20"
   },
@@ -56,6 +52,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/node": "^22.10.0",
     "@vitest/browser": "^2.1.8",
+    "conventional-changelog-conventionalcommits": "^9.3.1",
     "happy-dom": "^15.11.7",
     "playwright": "^1.49.0",
     "publint": "^0.3.0",
@@ -72,15 +69,7 @@
   "bugs": {
     "url": "https://github.com/connerfritz/imagetune/issues"
   },
-  "keywords": [
-    "image",
-    "resize",
-    "crop",
-    "canvas",
-    "browser",
-    "compression",
-    "webp"
-  ],
+  "keywords": ["image", "resize", "crop", "canvas", "browser", "compression", "webp"],
   "author": "Conner Fritz",
   "license": "ISC"
 }

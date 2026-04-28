@@ -59,11 +59,18 @@ Options: `width`, `height`, `quality` (1–100), `type`
 
 ## Conventions
 
-- **Conventional Commits required.** PR titles are linted by
+- **Conventional Commits required**, parsed with the
+  `conventionalcommits` preset (set explicitly in `.releaserc.json`,
+  *not* the angular default). PR titles are linted by
   `lint-pr-title.yml`; squash-merging makes the title the commit. `fix:`
   → patch, `feat:` → minor, `feat!:` / `BREAKING CHANGE:` footer → major.
   A non-conforming squash means *no release at all* — that's why the
   PR-title check is a required check.
+  - **Watch out:** the default angular preset does NOT recognize the
+    `feat!:` shortcut. It silently treats the commit as an unknown
+    type and contributes nothing to version computation, so a v2
+    rewrite can ship as a patch (it did, once — see git log around
+    1.0.1). Keep the `conventionalcommits` preset configured.
 - Feature work happens on feature branches. `main` is the default
   branch and is protected — releases happen on push there.
 - Don't add runtime dependencies. The point of this package is to be a
