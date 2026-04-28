@@ -1,6 +1,6 @@
 {
   "name": "imagetune",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tiny zero-dependency browser library for client-side image resizing, cropping, and format conversion.",
   "type": "module",
   "exports": {
@@ -21,7 +21,11 @@
   "unpkg": "./dist/index.global.js",
   "jsdelivr": "./dist/index.global.js",
   "sideEffects": false,
-  "files": ["dist", "readme.md", "LICENSE"],
+  "files": [
+    "dist",
+    "readme.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -68,7 +72,15 @@
   "bugs": {
     "url": "https://github.com/connerfritz/imagetune/issues"
   },
-  "keywords": ["image", "resize", "crop", "canvas", "browser", "compression", "webp"],
+  "keywords": [
+    "image",
+    "resize",
+    "crop",
+    "canvas",
+    "browser",
+    "compression",
+    "webp"
+  ],
   "author": "Conner Fritz",
   "license": "ISC"
 }
