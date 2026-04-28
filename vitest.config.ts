@@ -4,6 +4,8 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     include: ['test/**/*.test.ts'],
+    // Browser-mode tests live in test/browser/ and run via vitest.browser.config.ts
+    exclude: ['test/browser/**', 'node_modules/**', 'dist/**'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],

@@ -84,6 +84,15 @@ Modern evergreen browsers. The library prefers `createImageBitmap` and
 `OffscreenCanvas`, falling back to `FileReader` + `<img>` + `HTMLCanvasElement`
 when those aren't available.
 
+> **Cancellation note.** Browsers don't expose a way to truly cancel an
+> in-flight `createImageBitmap` decode or `convertToBlob` encode. When
+> `signal` aborts during one of those steps, the promise rejects
+> immediately and any decoded `ImageBitmap` is `.close()`d, but the
+> underlying decode/encode work runs to completion in the background.
+> For UI flows where the user is rapidly switching files, this still
+> drops the unwanted result on the floor — just don't expect CPU work
+> to stop instantly.
+
 ## Development
 
 ```bash
