@@ -27,11 +27,14 @@ jobs:
       - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          # No `registry-url` set here on purpose: @semantic-release/npm
-          # writes its own .npmrc keyed to NPM_TOKEN. setup-node's
-          # registry-url would write a separate .npmrc keyed to
-          # NODE_AUTH_TOKEN, which can collide.
-          node-version: 22
+          # No `registry-url` here: it would write an .npmrc keyed to
+          # NODE_AUTH_TOKEN, which short-circuits Trusted Publishing by
+          # giving npm a stale token to use instead of OIDC.
+          #
+          # Node 24, not 22: Trusted Publishing requires npm CLI >=11.5
+          # and Node 22 still ships with npm 10.9.x in the GHA hosted
+          # toolcache. The library's `engines.node` is independent (>=20).
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm rebuild
@@ -59,15 +62,17 @@ jobs:
           test -s dist/index.global.js
           test -s dist/index.d.ts
           test -s dist/index.d.cts
-      - name: Release
-        # @semantic-release/npm@12 still requires NPM_TOKEN — it does not
-        # yet integrate with npm's Trusted Publishing OIDC flow, despite
-        # the npm CLI itself supporting it. Revisit once
-        # https://github.com/semantic-release/npm picks up TP support.
-        # Provenance attestations DO still attach because `id-token:
-        # write` is granted on this job and `publishConfig.provenance`
-        # is true in package.json — those are independent of auth.
+      - name: Release (npm Trusted Publishing via OIDC)
+        # No NPM_TOKEN: @semantic-release/npm is configured with
+        # `npmPublish: false` in .releaserc.json, which makes it skip
+        # both the auth check and the publish step (see its index.js
+        # `verifyConditions`: auth is only verified when npmPublish !==
+        # false). The actual publish runs via @semantic-release/exec
+        # invoking `npm publish --provenance --access public`, which
+        # uses the npm CLI's native Trusted Publishing OIDC flow —
+        # provided the package is configured on npmjs.com to trust this
+        # repo+workflow. We'll fold this back into @semantic-release/npm
+        # whenever it ships native TP support.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm exec semantic-release
