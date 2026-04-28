@@ -1,0 +1,36 @@
+name: Lint PR title
+
+on:
+  pull_request:
+    # No `synchronize`: pushing new commits doesn't change the PR title,
+    # so re-running the title lint on every push is wasted work.
+    types: [opened, edited, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017 # v5.5.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Conventional Commits primary types we accept on squash-merge.
+          types: |
+            feat
+            fix
+            perf
+            refactor
+            docs
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+          subjectPattern: ^[A-Za-z].+$
+          subjectPatternError: |
+            The PR title subject must start with a letter so the generated
+            commit on master is a valid Conventional Commit.

@@ -1,0 +1,144 @@
+<!doctype html>
+<!--
+  Self-contained smoke-test page for ImageTune v2.
+  Built from the modernize-v2 branch — no external dependencies, no
+  network access required after load. Open in any modern browser.
+
+  This file is a build artifact for PR review. It is NOT part of the
+  published library. Will be removed before merge.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ImageTune v2 — preview</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; padding: 1.5rem; max-width: 900px; }
+      h1 { margin-top: 0; }
+      fieldset { border: 1px solid currentColor; border-radius: 4px; padding: 1rem; margin-bottom: 1rem; }
+      legend { padding: 0 0.5rem; font-weight: 600; }
+      label { display: inline-block; margin-right: 1rem; }
+      input[type="number"] { width: 5rem; }
+      .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+      .pane { padding: 0.75rem; border: 1px dashed currentColor; border-radius: 4px; min-height: 200px; }
+      .pane h3 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+      .pane img { max-width: 100%; height: auto; display: block; }
+      .meta { font-family: ui-monospace, monospace; font-size: 0.85rem; opacity: 0.8; margin-top: 0.5rem; }
+      .ratio { font-weight: 600; }
+      .ratio.win { color: #2a8f2a; }
+      .ratio.loss { color: #c44; }
+      button { padding: 0.5rem 1rem; cursor: pointer; }
+      .err { color: #c44; white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <h1>ImageTune v2 preview</h1>
+    <p>Pick an image and adjust the options. The library re-encodes it client-side; nothing is uploaded.</p>
+
+    <fieldset>
+      <legend>Input</legend>
+      <input id="file" type="file" accept="image/*" />
+    </fieldset>
+
+    <fieldset>
+      <legend>Options</legend>
+      <label>Format
+        <select id="type">
+          <option value="webp" selected>webp</option>
+          <option value="jpeg">jpeg</option>
+          <option value="png">png</option>
+        </select>
+      </label>
+      <label>Quality <input id="quality" type="number" min="1" max="100" value="80" /></label>
+      <label>Width <input id="width" type="number" min="1" value="500" /></label>
+      <label>Height <input id="height" type="number" min="1" value="500" /></label>
+      <label>Mode
+        <select id="mode">
+          <option value="scale" selected>scale (contain)</option>
+          <option value="crop">crop (cover)</option>
+        </select>
+      </label>
+      <button id="run" type="button">Tune</button>
+    </fieldset>
+
+    <div id="err" class="err"></div>
+
+    <div class="panes">
+      <div class="pane">
+        <h3>Original</h3>
+        <img id="orig" alt="" />
+        <div id="origMeta" class="meta"></div>
+      </div>
+      <div class="pane">
+        <h3>Tuned</h3>
+        <img id="out" alt="" />
+        <div id="outMeta" class="meta"></div>
+      </div>
+    </div>
+
+    <!-- Inlined IIFE bundle from dist/index.global.js (modernize-v2). -->
+    <script>
+"use strict";var __imagetune__=(()=>{var l=Object.defineProperty;var y=Object.getOwnPropertyDescriptor;var E=Object.getOwnPropertyNames;var I=Object.prototype.hasOwnProperty;var T=(t,e)=>{for(var a in e)l(t,a,{get:e[a],enumerable:!0})},A=(t,e,a,i)=>{if(e&&typeof e=="object"||typeof e=="function")for(let o of E(e))!I.call(t,o)&&o!==a&&l(t,o,{get:()=>e[o],enumerable:!(i=y(e,o))||i.enumerable});return t};var x=t=>A(l({},"__esModule",{value:!0}),t);var M={};T(M,{ImageTune:()=>D,tune:()=>g,tuneToDataURL:()=>v});function f(t,e,a){return e?new Promise((i,o)=>{let n=()=>o(e.reason);e.addEventListener("abort",n,{once:!0}),t.then(r=>{e.removeEventListener("abort",n),e.aborted?(a?.(r),o(e.reason)):i(r)},r=>{e.removeEventListener("abort",n),o(r)})}):t}async function w(t,e){return e?.throwIfAborted(),typeof createImageBitmap=="function"?await f(createImageBitmap(t),e,a=>a.close()):await L(t,e)}function L(t,e){return new Promise((a,i)=>{let o=new FileReader,n=new Image,r=()=>{e?.removeEventListener("abort",s)},s=()=>{r();try{o.abort()}catch{}n.src="",i(e?.reason??new DOMException("Aborted","AbortError"))};e?.addEventListener("abort",s,{once:!0}),n.onload=()=>{r(),a(n)},n.onerror=()=>{r(),i(new Error("Failed to decode image data"))},o.onerror=()=>{r(),i(o.error??new Error("Failed to read file"))},o.onloadend=()=>{typeof o.result=="string"?n.src=o.result:(r(),i(new Error("Unexpected FileReader result")))},o.readAsDataURL(t)})}function p(t,e,a,i){if(t.width<=0||t.height<=0)throw new RangeError("Source image has zero or negative dimensions");if(e<=0||a<=0)throw new RangeError("Target dimensions must be positive");let o=t.width/e,n=t.height/a;if(i==="crop"){let u=Math.min(o,n),m=t.width/u,d=t.height/u;return{canvasWidth:e,canvasHeight:a,drawWidth:m,drawHeight:d,offsetX:(e-m)/2,offsetY:(a-d)/2}}let r=Math.max(o,n),s=t.width/r,c=t.height/r;return{canvasWidth:s,canvasHeight:c,drawWidth:s,drawHeight:c,offsetX:0,offsetY:0}}var R={jpeg:"image/jpeg",jpg:"image/jpeg",png:"image/png",webp:"image/webp"},O=200,B=200;async function b(t,e){let{mime:a,quality:i,signal:o,smoothing:n,dims:r}=F(t,e);if(o?.throwIfAborted(),typeof OffscreenCanvas<"u"){let m=new OffscreenCanvas(r.canvasWidth,r.canvasHeight),d=m.getContext("2d");if(!d)throw new Error("2D canvas context unavailable");return d.imageSmoothingQuality=n,d.drawImage(t,r.offsetX,r.offsetY,r.drawWidth,r.drawHeight),o?.throwIfAborted(),await f(m.convertToBlob({type:a,quality:i}),o)}let s=document.createElement("canvas");s.width=r.canvasWidth,s.height=r.canvasHeight;let c=s.getContext("2d");if(!c)throw new Error("2D canvas context unavailable");c.imageSmoothingQuality=n,c.drawImage(t,r.offsetX,r.offsetY,r.drawWidth,r.drawHeight),o?.throwIfAborted();let u=new Promise((m,d)=>{s.toBlob(h=>h?m(h):d(new Error("Canvas encoding failed")),a,i)});return await f(u,o)}function F(t,e){let a=e.width??O,i=e.height??B,o=e.mode??"scale",n=e.quality??100;if(!Number.isFinite(n)||n<1||n>100)throw new RangeError(`Invalid quality value: ${n}. Must be 1–100.`);let r=e.type??"jpeg",s=R[r];if(!s)throw new TypeError(`Unsupported image format: ${String(e.type)}`);return{mime:s,quality:n/100,signal:e.signal,smoothing:e.smoothingQuality??"high",dims:p({width:t.width,height:t.height},a,i,o)}}async function g(t,e={}){let a=await w(t,e.signal);try{return await b(a,e)}finally{typeof ImageBitmap<"u"&&a instanceof ImageBitmap&&a.close()}}async function v(t,e={}){let a=await g(t,e);return e.signal?.throwIfAborted(),await new Promise((i,o)=>{let n=new FileReader,r=()=>e.signal?.removeEventListener("abort",s),s=()=>{r();try{n.abort()}catch{}o(e.signal?.reason??new DOMException("Aborted","AbortError"))};e.signal?.addEventListener("abort",s,{once:!0}),n.onerror=()=>{r(),o(n.error??new Error("Failed to read result"))},n.onloadend=()=>{r(),typeof n.result=="string"?i(n.result):o(new Error("Unexpected FileReader result"))},n.readAsDataURL(a)})}var D={tune:g,tuneToDataURL:v};return x(M);})();
+if (typeof window !== "undefined") window.ImageTune = __imagetune__.ImageTune;
+    </script>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const fileInput = $('file'),
+            origImg = $('orig'),
+            outImg = $('out'),
+            origMeta = $('origMeta'),
+            outMeta = $('outMeta'),
+            errBox = $('err'),
+            runBtn = $('run');
+
+      let pickedFile = null;
+      let lastOrigUrl = null;
+      let lastOutUrl = null;
+
+      const fmtKB = (n) => `${(n / 1024).toFixed(1)} KiB`;
+
+      fileInput.addEventListener('change', (evt) => {
+        pickedFile = evt.target.files[0] ?? null;
+        if (!pickedFile) return;
+        if (lastOrigUrl) URL.revokeObjectURL(lastOrigUrl);
+        lastOrigUrl = URL.createObjectURL(pickedFile);
+        origImg.src = lastOrigUrl;
+        origMeta.textContent = `${pickedFile.name} — ${pickedFile.type || 'unknown'} — ${fmtKB(pickedFile.size)}`;
+      });
+
+      runBtn.addEventListener('click', async () => {
+        errBox.textContent = '';
+        if (!pickedFile) {
+          errBox.textContent = 'Pick an image first.';
+          return;
+        }
+        const opts = {
+          type: $('type').value,
+          quality: Number($('quality').value),
+          width: Number($('width').value),
+          height: Number($('height').value),
+          mode: $('mode').value,
+        };
+        const t0 = performance.now();
+        try {
+          const blob = await ImageTune.tune(pickedFile, opts);
+          const dt = (performance.now() - t0).toFixed(0);
+          if (lastOutUrl) URL.revokeObjectURL(lastOutUrl);
+          lastOutUrl = URL.createObjectURL(blob);
+          outImg.src = lastOutUrl;
+
+          const ratio = blob.size / pickedFile.size;
+          const cls = ratio < 1 ? 'win' : 'loss';
+          const pct = ((1 - ratio) * 100).toFixed(0);
+          outMeta.innerHTML =
+            `${blob.type} — ${fmtKB(blob.size)} — ${dt}ms — ` +
+            `<span class="ratio ${cls}">${ratio < 1 ? `${pct}% smaller` : `${(-pct)}% larger`}</span>`;
+        } catch (e) {
+          errBox.textContent = `Error: ${e?.message ?? e}`;
+          console.error(e);
+        }
+      });
+    </script>
+  </body>
+</html>

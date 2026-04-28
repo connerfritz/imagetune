@@ -1,11 +1,73 @@
 {
   "name": "imagetune",
   "version": "1.0.0",
-  "description": "Lighten your image load and handle file conversion, scaling and formatting in the browser.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Tiny zero-dependency browser library for client-side image resizing, cropping, and format conversion.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
   },
-  "author": "",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/index.global.js",
+  "jsdelivr": "./dist/index.global.js",
+  "sideEffects": false,
+  "files": ["dist", "readme.md", "LICENSE"],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:browser:watch": "vitest --config vitest.browser.config.ts",
+    "verify-package": "publint && attw --pack",
+    "prepack": "pnpm run build"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.4",
+    "@biomejs/biome": "^1.9.4",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/node": "^22.10.0",
+    "@vitest/browser": "^2.1.8",
+    "happy-dom": "^15.11.7",
+    "playwright": "^1.49.0",
+    "publint": "^0.3.0",
+    "semantic-release": "^24.2.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/connerfritz/imagetune.git"
+  },
+  "homepage": "https://github.com/connerfritz/imagetune#readme",
+  "bugs": {
+    "url": "https://github.com/connerfritz/imagetune/issues"
+  },
+  "keywords": ["image", "resize", "crop", "canvas", "browser", "compression", "webp"],
+  "author": "Conner Fritz",
   "license": "ISC"
 }
