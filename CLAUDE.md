@@ -17,7 +17,7 @@ tuneToDataURL(file, options) // → Promise<string>  (data: URL)
 ```
 
 Options: `width`, `height`, `quality` (1–100), `type`
-(`jpeg`/`jpg`/`png`/`webp`/`avif`), `mode` (`scale`/`crop`),
+(`jpeg`/`jpg`/`png`/`webp`), `mode` (`scale`/`crop`),
 `smoothingQuality`, `signal` (`AbortSignal`).
 
 ## Repository layout
@@ -77,6 +77,12 @@ Options: `width`, `height`, `quality` (1–100), `type`
   falls back to PNG in every major browser, so v1 never actually emitted
   GIFs. Don't add it back without `OffscreenCanvas.convertToBlob` actually
   supporting it.
+- `avif` output is also unsupported and absent from the `type` enum.
+  `OffscreenCanvas.convertToBlob({ type: 'image/avif' })` rejects in
+  every production browser as of early 2026 ("The encoding operation
+  failed"). AVIF *decoding* is universal, so `tune()` reads AVIF input
+  fine — just can't emit it. Don't add it to `OutputFormat` without
+  re-checking platform support.
 - `tune()` returns a `Blob` in v2, not a data URL. The data-URL behavior
   is `tuneToDataURL()`. Updating the README/example without also updating
   this is the most common drift.

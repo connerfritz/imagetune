@@ -67,7 +67,7 @@
   "bugs": {
     "url": "https://github.com/connerfritz/imagetune/issues"
   },
-  "keywords": ["image", "resize", "crop", "canvas", "browser", "compression", "webp", "avif"],
+  "keywords": ["image", "resize", "crop", "canvas", "browser", "compression", "webp"],
   "author": "Conner Fritz",
   "license": "ISC"
 }

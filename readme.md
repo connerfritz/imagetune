@@ -6,7 +6,7 @@ cropping, and format conversion. Takes a `File` (typically from
 and re-encode large photos *before* upload — saving bandwidth, server
 processing time, and storage.
 
-> **v2 highlights:** TypeScript types, ESM + CJS + UMD builds, WebP / AVIF
+> **v2 highlights:** TypeScript types, ESM + CJS + UMD builds, WebP
 > output, `OffscreenCanvas` decoding, `AbortSignal` cancellation, and
 > proper rejection of malformed inputs. See [Migrating from v1](#migrating-from-v1).
 
@@ -62,7 +62,7 @@ Drop-in `<script>` tag (UMD/IIFE build, exposes `window.ImageTune`):
 | `width`            | `number`                                        | `200`    | Target width in pixels.                                    |
 | `height`           | `number`                                        | `200`    | Target height in pixels.                                   |
 | `quality`          | `number` (1–100)                                | `100`    | Encoder quality. Ignored for `png` (lossless).             |
-| `type`             | `'jpeg' \| 'jpg' \| 'png' \| 'webp' \| 'avif'`  | `'jpeg'` | Output format. `'jpg'` is an alias for `'jpeg'`.           |
+| `type`             | `'jpeg' \| 'jpg' \| 'png' \| 'webp'`            | `'jpeg'` | Output format. `'jpg'` is an alias for `'jpeg'`.           |
 | `mode`             | `'scale' \| 'crop'`                             | `'scale'`| `scale` fits inside the box; `crop` covers and centers.    |
 | `smoothingQuality` | `'low' \| 'medium' \| 'high'`                   | `'high'` | Canvas `imageSmoothingQuality`.                            |
 | `signal`           | `AbortSignal`                                   | —        | Cancel decoding/encoding (e.g. when the input changes).    |
@@ -83,6 +83,13 @@ The default options are unchanged; same target dimensions, same JPEG default.
 Modern evergreen browsers. The library prefers `createImageBitmap` and
 `OffscreenCanvas`, falling back to `FileReader` + `<img>` + `HTMLCanvasElement`
 when those aren't available.
+
+**AVIF input** is decoded by every modern browser, so `tune()` happily
+accepts AVIF blobs as input. **AVIF output** is not currently supported
+in the canvas APIs of any production browser as of early 2026 —
+`canvas.convertToBlob({ type: 'image/avif' })` rejects everywhere — so
+`'avif'` is intentionally absent from the `type` enum. Pick `'webp'` if
+you want broad encoder support with strong compression.
 
 > **Cancellation note.** Browsers don't expose a way to truly cancel an
 > in-flight `createImageBitmap` decode or `convertToBlob` encode. When

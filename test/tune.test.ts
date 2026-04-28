@@ -137,12 +137,18 @@ describe('tune', () => {
       ['jpg', 'image/jpeg'],
       ['png', 'image/png'],
       ['webp', 'image/webp'],
-      ['avif', 'image/avif'],
     ];
     for (const [type, mime] of cases) {
       await tune(new Blob(['fake']), { type });
       expect(mockCanvas.convertCalledWith?.type).toBe(mime);
     }
+  });
+
+  it('rejects avif output (no browser supports encoding it via canvas)', async () => {
+    await expect(
+      // @ts-expect-error — exercising the runtime guard that backs the dropped type
+      tune(new Blob(['fake']), { type: 'avif' }),
+    ).rejects.toThrow(TypeError);
   });
 
   it('rejects unknown formats', async () => {

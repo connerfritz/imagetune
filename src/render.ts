@@ -8,7 +8,6 @@ const FORMAT_TO_MIME: Record<OutputFormatInput, string> = {
   jpg: 'image/jpeg',
   png: 'image/png',
   webp: 'image/webp',
-  avif: 'image/avif',
 };
 
 const DEFAULT_WIDTH = 200;
