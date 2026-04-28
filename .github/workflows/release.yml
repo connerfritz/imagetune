@@ -27,12 +27,16 @@ jobs:
       - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          # No `registry-url` here on purpose: it writes an .npmrc keyed
-          # to NODE_AUTH_TOKEN, which collides with semantic-release's own
-          # auth and can silently skip provenance. semantic-release/npm
-          # handles registry config itself via NPM_TOKEN.
+          # No `registry-url` here: it writes an .npmrc keyed to
+          # NODE_AUTH_TOKEN which would short-circuit Trusted Publishing
+          # by giving the npm CLI a stale token to use instead of the
+          # OIDC exchange.
           node-version: 22
           cache: pnpm
+      # npm Trusted Publishing requires npm CLI >= 11.5.1; Node 22 LTS
+      # ships with npm 10.x. Upgrade in place so semantic-release/npm's
+      # underlying `npm publish` can do the OIDC exchange.
+      - run: npm install --global npm@latest
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm rebuild
       - run: pnpm lint
@@ -59,8 +63,12 @@ jobs:
           test -s dist/index.global.js
           test -s dist/index.d.ts
           test -s dist/index.d.cts
-      - name: Release
+      - name: Release (npm Trusted Publishing via OIDC)
+        # No NPM_TOKEN: the workflow's id-token: write permission lets
+        # the npm CLI fetch a short-lived OIDC token from GitHub and
+        # exchange it for a publish credential, provided the package is
+        # configured with this repo+workflow as a trusted publisher on
+        # npmjs.com. Provenance attestations are attached automatically.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm exec semantic-release
