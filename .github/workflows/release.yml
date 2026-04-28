@@ -31,12 +31,13 @@ jobs:
           # NODE_AUTH_TOKEN which would short-circuit Trusted Publishing
           # by giving the npm CLI a stale token to use instead of the
           # OIDC exchange.
-          node-version: 22
+          #
+          # Node 24, not 22: Trusted Publishing requires npm CLI >=11.5
+          # and Node 22 still ships with npm 10.9.x in the GHA hosted
+          # toolcache. The library itself supports Node >=20 (see
+          # engines.node), but the *publisher* runtime is independent.
+          node-version: 24
           cache: pnpm
-      # npm Trusted Publishing requires npm CLI >= 11.5.1; Node 22 LTS
-      # ships with npm 10.x. Upgrade in place so semantic-release/npm's
-      # underlying `npm publish` can do the OIDC exchange.
-      - run: npm install --global npm@latest
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm rebuild
       - run: pnpm lint
